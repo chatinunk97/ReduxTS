@@ -302,3 +302,54 @@ export default function App() {
   );
 }
 ```
+
+# useDispatch
+
+useDispatch allow us to dispatch function so we can dispatch an action creator
+It is used with an action creator
+
+Now inorder to dispatch we need to specify which action in the action creator we want to use (in this case there's only 1 ; searchRepo)
+
+```
+  const dispatch = useDispatch();
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(actionCreators.searchRepositories(term) as any);
+  };
+```
+
+in the action creator's index.ts we export it normally so we got an object out of it so we need to .searchRepo
+
+The reason why we can just use dispatch without referencing the store
+is because we already tell that this component is related to the store in App.tsx
+
+\*Look it at a context provider way it's simillar
+
+```
+  <Provider store={store}>
+      <div>
+        <h1>Search for a package</h1>
+        <RepositoriesList />
+      </div>
+    </Provider>
+```
+
+But it's too long to type all useDispatch and actionCreators
+so we gonna utilize the custom Hook (like in useContext for components under a context provider)
+
+```
+import { useDispatch } from "react-redux";
+import { bindActionCreators } from "redux";
+import { actionCreators } from "../state";
+
+export const useActions = () => {
+  const dispatch = useDispatch();
+
+  bindActionCreators(actionCreators, dispatch);
+};
+
+
+```
+
+Technically it's just putting all code in a custom hook file to reuse it easily
