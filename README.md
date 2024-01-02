@@ -308,7 +308,7 @@ export default function App() {
 useDispatch allow us to dispatch function so we can dispatch an action creator
 It is used with an action creator
 
-Now inorder to dispatch we need to specify which action in the action creator we want to use (in this case there's only 1 ; searchRepo)
+Now in order to dispatch we need to specify which action in the action creator we want to use (in this case there's only 1 ; searchRepo)
 
 ```
   const dispatch = useDispatch();
@@ -353,3 +353,80 @@ export const useActions = () => {
 ```
 
 Technically it's just putting all code in a custom hook file to reuse it easily
+
+# useSelector from React-redux
+
+```
+import { useSelector } from "react-redux";
+const state = useSelector((state) => state);
+
+#Again we don't need to call or to refer to the state because this component is already under <Provider store={store}> ...
+#A hook to access the redux store's state. This hook takes a selector function as an argument. The selector is called with the store state.
+```
+
+Getting entire STATE from our Redux Store
+we can use the useSelector to scope down which item we want from the store
+
+The problem now us the 'state' in the useSelector argument
+React-Redux will never know what the states looks like
+for example if we have multiple reducers and it looks completely different that TS can't help us debug the code
+
+so if you want a shortcut => use type any which is meaningless since we are using TS to help us with the type thing
+
+The solution is below
+
+So we go to the reducer and use the TS built-in helper Utility type
+basically just saying that this Type is the type that comes out of that function
+
+```
+import { useDispatch } from "react-redux";
+import { combineReducers } from "redux";
+import repositoriesReducer from "./repositoriesReducer";
+
+const reducers = combineReducers({
+  repositories: repositoriesReducer,
+});
+
+export default reducers;
+
+export type RootState = ReturnType<typeof reducers>;
+
+
+```
+
+If we hover above RootState it will now show
+
+```
+type RootState = {
+    repositories: RepositoriesState;
+}
+```
+
+Now we can ust plug this RootState in the state type annotation BUT
+it's not that useable and we do have custom hook like above (useDispatch) so we're going to create a custom hook for this one as well
+
+```
+import { useSelector, TypedUseSelectorHook } from "react-redux";
+import { RootState } from "../state";
+
+export const useTypeSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+```
+
+We can plug it in to the RepositoriesList
+
+```
+import { useTypeSelector } from "../hooks/useTypedSelector";
+.
+.
+.
+const state = useTypeSelector((state) => state.repositories);
+
+```
+
+Well this is the way the document says to communicate type information over React-Redux
+
+Good practice to take from this Project
+
+1. Create a root file index.ts for every repo to centralize the exporting / importing
+2. Communicating type over component may be very challenging = > Follow the document ! (look at the customHook file : useTypedSelector.ts)
